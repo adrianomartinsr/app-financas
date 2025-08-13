@@ -3,12 +3,7 @@ import { initializeApp } from 'firebase/app';
 import { 
     getAuth, 
     onAuthStateChanged,
-    // As funções de login com e-mail e Google foram desativadas, mas mantidas aqui para o futuro.
-    // createUserWithEmailAndPassword,
-    // signInWithEmailAndPassword,
-    // GoogleAuthProvider,
-    // signInWithPopup,
-    signInAnonymously, // Usaremos o login anônimo por enquanto
+    signInAnonymously,
     signOut
 } from 'firebase/auth';
 import { 
@@ -64,102 +59,11 @@ const DeleteIcon = () => (
         <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clipRule="evenodd" />
     </svg>
 );
-const LogoutIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-    </svg>
-);
-const GoogleIcon = () => (
-    <svg className="w-5 h-5" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
-        <path fill="currentColor" d="M488 261.8C488 403.3 381.5 512 244 512 110.3 512 0 398.8 0 256S110.3 0 244 0c73 0 134.3 29.3 179.8 73.4L373.4 128C339.9 98.4 297.3 80 244 80c-87.6 0-158.8 72.2-158.8 161.4s71.2 161.4 158.8 161.4c97.1 0 134.3-66.2 138.6-101.4H244v-64h244c1.5 12.6 2.4 25.4 2.4 38.8z"></path>
-    </svg>
-);
 const SparklesIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
         <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1.158a3.001 3.001 0 002.343 2.842l.295.148a3.001 3.001 0 003.724 0l.295-.148A3.001 3.001 0 0015 4.158V3a1 1 0 112 0v1.158c0 .895-.372 1.758-.986 2.342l-.295.278a3.001 3.001 0 000 4.444l.295.278c.614.584.986 1.447.986 2.342V17a1 1 0 11-2 0v-1.158a3.001 3.001 0 00-2.343-2.842l-.295-.148a3.001 3.001 0 00-3.724 0l-.295.148A3.001 3.001 0 005 15.842V17a1 1 0 11-2 0v-1.158c0-.895.372-1.758.986-2.342l.295-.278a3.001 3.001 0 000-4.444l-.295-.278A2.999 2.999 0 013 4.158V3a1 1 0 011-1z" clipRule="evenodd" />
     </svg>
 );
-
-
-/*
-// --- CÓDIGO DE AUTENTICAÇÃO DESATIVADO ---
-// O componente AuthPage foi desativado para permitir o uso direto do aplicativo.
-// Para reativá-lo, descomente este bloco e mude a lógica no componente App principal.
-
-const AuthPage = ({ auth }) => {
-    const [isLogin, setIsLogin] = useState(true);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState('');
-
-    const handleAuthAction = async (e) => {
-        e.preventDefault();
-        setError('');
-
-        if (isLogin) {
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (err) {
-                console.error("Login error:", err);
-                if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-                    setError('Falha ao entrar. Verifique seu e-mail e senha.');
-                } else {
-                    setError('Ocorreu um erro ao tentar fazer login.');
-                }
-            }
-        } else {
-            if (password !== confirmPassword) {
-                setError('As senhas não correspondem.');
-                return;
-            }
-            try {
-                await createUserWithEmailAndPassword(auth, email, password);
-            } catch (err) {
-                console.error("Register error:", err);
-                if (err.code === 'auth/weak-password') {
-                    setError('A senha deve ter pelo menos 6 caracteres.');
-                } else if (err.code === 'auth/email-already-in-use') {
-                    setError('Este e-mail já está em uso.');
-                } else if (err.code === 'auth/operation-not-allowed') {
-                    setError('Erro: Login por e-mail/senha não está ativado. Por favor, ative-o no seu Console do Firebase.');
-                }
-                else {
-                    setError('Falha ao criar a conta.');
-                }
-            }
-        }
-    };
-
-    const handleGoogleLogin = async () => {
-        setError('');
-        const provider = new GoogleAuthProvider();
-        try {
-            await signInWithPopup(auth, provider);
-        } catch (err) {
-            console.error("Google login error:", err);
-            if (err.code === 'auth/unauthorized-domain') {
-                 setError(`Erro: O domínio '${window.location.hostname}' não está autorizado. Por favor, adicione este domínio à lista de "Domínios autorizados" no seu Console do Firebase.`);
-            } else {
-                setError("Falha ao fazer login com o Google. Tente novamente.");
-            }
-        }
-    };
-
-    return (
-        <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center p-4">
-            <div className="max-w-md w-full mx-auto bg-white p-8 rounded-lg shadow-md">
-                <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
-                    {isLogin ? 'Bem-vindo de Volta!' : 'Crie sua Conta'}
-                </h2>
-                <form onSubmit={handleAuthAction} className="space-y-6">
-                    // ... Formulário de login ...
-                </form>
-            </div>
-        </div>
-    );
-};
-*/
 
 
 // --- Componente Principal do App (após login) ---
@@ -183,7 +87,6 @@ const MainApp = ({ auth, userId, db }) => {
 
     useEffect(() => {
         if (!db || !userId) return;
-        // O caminho dos dados agora é mais simples, focado no usuário (anônimo ou logado)
         const baseCollectionPath = `users/${userId}`;
 
         const collectionsToWatch = {
@@ -500,6 +403,7 @@ const MainApp = ({ auth, userId, db }) => {
             {showTransactionModal && <TransactionModal 
                 onClose={() => { setShowTransactionModal(false); setEditingTransaction(null); }}
                 onSubmit={handleAddOrUpdateTransaction}
+                onCategorySubmit={handleAddOrUpdateCategory}
                 transaction={editingTransaction}
                 categories={categories}
                 accounts={accounts}
@@ -561,7 +465,6 @@ const App = () => {
                 setUser(user);
                 setIsAuthReady(true);
             } else {
-                // Se não houver usuário, faz o login anônimo
                 signInAnonymously(authInstance).catch((error) => {
                     console.error("Anonymous sign-in failed:", error);
                     setIsAuthReady(true);
@@ -585,7 +488,6 @@ const App = () => {
         );
     }
     
-    // Agora, em vez de mostrar a AuthPage, mostramos o MainApp diretamente se houver um usuário (mesmo que anônimo)
     return user ? <MainApp auth={auth} userId={user.uid} db={db} /> : (
         <div className="flex justify-center items-center h-screen bg-gray-100">
             <p>Conectando...</p>
@@ -595,7 +497,7 @@ const App = () => {
 
 
 // --- Componentes de UI (Separados para clareza) ---
-const Header = ({ currentView, setCurrentView, auth }) => (
+const Header = ({ currentView, setCurrentView }) => (
     <header className="bg-white shadow-md">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-800">Finanças Pessoais</h1>
@@ -604,13 +506,11 @@ const Header = ({ currentView, setCurrentView, auth }) => (
                 <button onClick={() => setCurrentView('transactions')} className={`px-2 py-2 sm:px-3 rounded-md text-sm font-medium ${currentView === 'transactions' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>Transações</button>
                 <button onClick={() => setCurrentView('categories')} className={`px-2 py-2 sm:px-3 rounded-md text-sm font-medium ${currentView === 'categories' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>Categorias</button>
                 <button onClick={() => setCurrentView('accounts')} className={`px-2 py-2 sm:px-3 rounded-md text-sm font-medium ${currentView === 'accounts' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>Contas</button>
-                {/* O botão de Logout foi removido por enquanto */}
             </nav>
         </div>
     </header>
 );
 
-// (O restante dos componentes permanece o mesmo)
 const DashboardView = ({ dashboardData, onAnalyzeClick }) => (
     <div className="p-4 md:p-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -658,60 +558,88 @@ const DashboardView = ({ dashboardData, onAnalyzeClick }) => (
     </div>
 );
 
-const TransactionsView = ({ transactions, categories, onAddClick, onEditClick, onDeleteClick, onImportClick, onDownloadTemplateClick }) => (
-    <div className="p-4 md:p-6">
-        <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
-            <h2 className="text-2xl font-bold text-gray-800">Transações</h2>
-            <div className="flex items-center gap-2 flex-wrap">
-                <button onClick={onDownloadTemplateClick} className="bg-gray-500 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-600 flex items-center">
-                    <DownloadIcon />
-                    <span>Baixar Modelo</span>
-                </button>
-                <button onClick={onImportClick} className="bg-green-500 text-white px-4 py-2 rounded-lg shadow hover:bg-green-600 flex items-center">
-                    <UploadIcon />
-                    <span>Importar</span>
-                </button>
-                <button onClick={onAddClick} className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 flex items-center">
-                    <PlusIcon />
-                    <span>Adicionar</span>
-                </button>
+const TransactionsView = ({ transactions, categories, onAddClick, onEditClick, onDeleteClick, onImportClick, onDownloadTemplateClick }) => {
+    const [selectedMonth, setSelectedMonth] = useState('all');
+
+    const availableMonths = useMemo(() => {
+        const months = new Set();
+        transactions.forEach(t => {
+            months.add(t.date.substring(0, 7)); // YYYY-MM
+        });
+        return Array.from(months).sort().reverse();
+    }, [transactions]);
+
+    const filteredTransactions = useMemo(() => {
+        if (selectedMonth === 'all') {
+            return transactions;
+        }
+        return transactions.filter(t => t.date.startsWith(selectedMonth));
+    }, [transactions, selectedMonth]);
+
+    return (
+        <div className="p-4 md:p-6">
+            <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
+                <h2 className="text-2xl font-bold text-gray-800">Transações</h2>
+                <div className="flex items-center gap-2 flex-wrap">
+                    <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="p-2 border border-gray-300 rounded-md shadow-sm">
+                        <option value="all">Todos os Meses</option>
+                        {availableMonths.map(month => {
+                            const [year, monthNum] = month.split('-');
+                            const date = new Date(year, monthNum - 1);
+                            const monthName = date.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+                            return <option key={month} value={month}>{monthName.charAt(0).toUpperCase() + monthName.slice(1)}</option>
+                        })}
+                    </select>
+                    <button onClick={onDownloadTemplateClick} className="bg-gray-500 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-600 flex items-center">
+                        <DownloadIcon />
+                        <span>Baixar Modelo</span>
+                    </button>
+                    <button onClick={onImportClick} className="bg-green-500 text-white px-4 py-2 rounded-lg shadow hover:bg-green-600 flex items-center">
+                        <UploadIcon />
+                        <span>Importar</span>
+                    </button>
+                    <button onClick={onAddClick} className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 flex items-center">
+                        <PlusIcon />
+                        <span>Adicionar</span>
+                    </button>
+                </div>
+            </div>
+            <div className="bg-white rounded-lg shadow-md overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoria</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
+                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date)).map(t => {
+                            const [year, month, day] = t.date.split('-');
+                            const formattedDate = `${day}/${month}/${year}`;
+                            return (
+                                <tr key={t.id}>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{formattedDate}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{t.description}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{categories.find(c => c.id === t.categoryId)?.name || 'N/A'}</td>
+                                    <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-semibold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                                        {t.type === 'income' ? '+' : '-'} R$ {parseFloat(t.amount).toFixed(2)}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                        <button onClick={() => onEditClick(t)} className="text-indigo-600 hover:text-indigo-900 mr-3"><EditIcon /></button>
+                                        <button onClick={() => onDeleteClick(t.id)} className="text-red-600 hover:text-red-900"><DeleteIcon /></button>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
             </div>
         </div>
-        <div className="bg-white rounded-lg shadow-md overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                    <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoria</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                    </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                    {transactions.sort((a, b) => new Date(b.date) - new Date(a.date)).map(t => {
-                        const [year, month, day] = t.date.split('-');
-                        const formattedDate = `${day}/${month}/${year}`;
-                        return (
-                            <tr key={t.id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{formattedDate}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{t.description}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{categories.find(c => c.id === t.categoryId)?.name || 'N/A'}</td>
-                                <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-semibold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                                    {t.type === 'income' ? '+' : '-'} R$ {parseFloat(t.amount).toFixed(2)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                    <button onClick={() => onEditClick(t)} className="text-indigo-600 hover:text-indigo-900 mr-3"><EditIcon /></button>
-                                    <button onClick={() => onDeleteClick(t.id)} className="text-red-600 hover:text-red-900"><DeleteIcon /></button>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </div>
-    </div>
-);
+    );
+};
 
 const GenericListView = ({ title, items, onAdd, onEdit, onDelete, columns }) => (
     <div className="p-4 md:p-6">
@@ -746,7 +674,7 @@ const GenericListView = ({ title, items, onAdd, onEdit, onDelete, columns }) => 
     </div>
 );
 
-const TransactionModal = ({ onClose, onSubmit, transaction, categories, accounts, callGeminiAPI }) => {
+const TransactionModal = ({ onClose, onSubmit, onCategorySubmit, transaction, categories, accounts, callGeminiAPI }) => {
     const [type, setType] = useState(transaction?.type || 'expense');
     const [description, setDescription] = useState(transaction?.description || '');
     const [amount, setAmount] = useState(transaction?.amount || '');
@@ -754,6 +682,33 @@ const TransactionModal = ({ onClose, onSubmit, transaction, categories, accounts
     const [categoryId, setCategoryId] = useState(transaction?.categoryId || '');
     const [accountId, setAccountId] = useState(transaction?.accountId || '');
     const [isSuggesting, setIsSuggesting] = useState(false);
+    const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+
+    const handleCategoryChange = (e) => {
+        const { value } = e.target;
+        if (value === 'add_new') {
+            setShowNewCategoryInput(true);
+            setCategoryId('add_new');
+        } else {
+            setShowNewCategoryInput(false);
+            setCategoryId(value);
+        }
+    };
+
+    const handleCreateCategory = async () => {
+        if (!newCategoryName.trim()) {
+            alert("Por favor, insira um nome para a nova categoria.");
+            return;
+        }
+        const newCategoryData = { name: newCategoryName.trim(), type };
+        const newCategoryRef = await onCategorySubmit(newCategoryData);
+        if (newCategoryRef && newCategoryRef.id) {
+            setCategoryId(newCategoryRef.id);
+            setShowNewCategoryInput(false);
+            setNewCategoryName('');
+        }
+    };
 
     const handleSuggestCategory = async () => {
         if (!description) {
@@ -788,6 +743,10 @@ const TransactionModal = ({ onClose, onSubmit, transaction, categories, accounts
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (categoryId === 'add_new') {
+            alert("Por favor, salve a nova categoria antes de continuar.");
+            return;
+        }
         if (!description || !amount || !date || !categoryId || !accountId) {
             alert("Por favor, preencha todos os campos.");
             return;
@@ -831,10 +790,23 @@ const TransactionModal = ({ onClose, onSubmit, transaction, categories, accounts
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Categoria</label>
-                        <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                        <select value={categoryId} onChange={handleCategoryChange} className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
                             <option value="">Selecione...</option>
+                            <option value="add_new" className="text-blue-600 font-bold">+ Criar nova categoria...</option>
                             {filteredCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
+                        {showNewCategoryInput && (
+                            <div className="flex items-center mt-2">
+                                <input 
+                                    type="text" 
+                                    value={newCategoryName} 
+                                    onChange={(e) => setNewCategoryName(e.target.value)}
+                                    placeholder="Nome da nova categoria"
+                                    className="flex-grow p-2 border border-gray-300 rounded-l-md"
+                                />
+                                <button type="button" onClick={handleCreateCategory} className="px-4 py-2 bg-green-500 text-white rounded-r-md hover:bg-green-600">Salvar</button>
+                            </div>
+                        )}
                     </div>
                      <div>
                         <label className="block text-sm font-medium text-gray-700">Conta</label>
