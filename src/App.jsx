@@ -442,11 +442,7 @@ const App = () => {
     const [isAuthReady, setIsAuthReady] = useState(false);
 
     useEffect(() => {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';
-        script.async = true;
-        document.body.appendChild(script);
-
+        // O script do XLSX não é mais necessário aqui, pois já está no index.html
         if (!firebaseConfig.apiKey) {
             console.error("Firebase config is not available. Please check your .env.local file.");
             setIsAuthReady(true);
@@ -473,9 +469,6 @@ const App = () => {
         });
 
         return () => {
-            if (document.body.contains(script)) {
-                document.body.removeChild(script);
-            }
             unsubscribe();
         };
     }, []);
@@ -498,14 +491,14 @@ const App = () => {
 
 // --- Componentes de UI (Separados para clareza) ---
 const Header = ({ currentView, setCurrentView }) => (
-    <header className="bg-white shadow-md">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-800">Finanças Pessoais</h1>
-            <nav className="flex items-center space-x-1 sm:space-x-2">
-                <button onClick={() => setCurrentView('dashboard')} className={`px-2 py-2 sm:px-3 rounded-md text-sm font-medium ${currentView === 'dashboard' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>Dashboard</button>
-                <button onClick={() => setCurrentView('transactions')} className={`px-2 py-2 sm:px-3 rounded-md text-sm font-medium ${currentView === 'transactions' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>Transações</button>
-                <button onClick={() => setCurrentView('categories')} className={`px-2 py-2 sm:px-3 rounded-md text-sm font-medium ${currentView === 'categories' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>Categorias</button>
-                <button onClick={() => setCurrentView('accounts')} className={`px-2 py-2 sm:px-3 rounded-md text-sm font-medium ${currentView === 'accounts' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>Contas</button>
+    <header className="bg-white shadow-md sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center">
+            <h1 className="text-2xl font-bold text-gray-800 mb-2 sm:mb-0">Finanças Pessoais</h1>
+            <nav className="flex items-center space-x-1">
+                <button onClick={() => setCurrentView('dashboard')} className={`px-3 py-2 rounded-md text-sm font-medium ${currentView === 'dashboard' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>Dashboard</button>
+                <button onClick={() => setCurrentView('transactions')} className={`px-3 py-2 rounded-md text-sm font-medium ${currentView === 'transactions' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>Transações</button>
+                <button onClick={() => setCurrentView('categories')} className={`px-3 py-2 rounded-md text-sm font-medium ${currentView === 'categories' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>Categorias</button>
+                <button onClick={() => setCurrentView('accounts')} className={`px-3 py-2 rounded-md text-sm font-medium ${currentView === 'accounts' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>Contas</button>
             </nav>
         </div>
     </header>
@@ -578,32 +571,42 @@ const TransactionsView = ({ transactions, categories, onAddClick, onEditClick, o
 
     return (
         <div className="p-4 md:p-6">
-            <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
                 <h2 className="text-2xl font-bold text-gray-800">Transações</h2>
-                <div className="flex items-center gap-2 flex-wrap">
-                    <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="p-2 border border-gray-300 rounded-md shadow-sm">
-                        <option value="all">Todos os Meses</option>
-                        {availableMonths.map(month => {
-                            const [year, monthNum] = month.split('-');
-                            const date = new Date(year, monthNum - 1);
-                            const monthName = date.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
-                            return <option key={month} value={month}>{monthName.charAt(0).toUpperCase() + monthName.slice(1)}</option>
-                        })}
-                    </select>
-                    <button onClick={onDownloadTemplateClick} className="bg-gray-500 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-600 flex items-center">
+                <div className="flex items-center gap-2 flex-wrap justify-center">
+                    <button onClick={onDownloadTemplateClick} className="bg-gray-500 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-600 flex items-center text-sm">
                         <DownloadIcon />
-                        <span>Baixar Modelo</span>
+                        <span>Modelo</span>
                     </button>
-                    <button onClick={onImportClick} className="bg-green-500 text-white px-4 py-2 rounded-lg shadow hover:bg-green-600 flex items-center">
+                    <button onClick={onImportClick} className="bg-green-500 text-white px-4 py-2 rounded-lg shadow hover:bg-green-600 flex items-center text-sm">
                         <UploadIcon />
                         <span>Importar</span>
                     </button>
-                    <button onClick={onAddClick} className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 flex items-center">
+                    <button onClick={onAddClick} className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 flex items-center text-sm">
                         <PlusIcon />
                         <span>Adicionar</span>
                     </button>
                 </div>
             </div>
+
+            <div className="mb-4">
+                <div className="flex items-center space-x-2 overflow-x-auto pb-2">
+                    <button onClick={() => setSelectedMonth('all')} className={`px-4 py-2 text-sm font-medium rounded-full shadow-sm whitespace-nowrap ${selectedMonth === 'all' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>
+                        Todos os Meses
+                    </button>
+                    {availableMonths.map(month => {
+                        const [year, monthNum] = month.split('-');
+                        const date = new Date(year, monthNum - 1);
+                        const monthName = date.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+                        return (
+                             <button key={month} onClick={() => setSelectedMonth(month)} className={`px-4 py-2 text-sm font-medium rounded-full shadow-sm whitespace-nowrap ${selectedMonth === month ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>
+                                {monthName.charAt(0).toUpperCase() + monthName.slice(1)}
+                            </button>
+                        )
+                    })}
+                </div>
+            </div>
+
             <div className="bg-white rounded-lg shadow-md overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -760,7 +763,7 @@ const TransactionModal = ({ onClose, onSubmit, onCategorySubmit, transaction, ca
     }, [type, categories]);
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
             <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md">
                 <h2 className="text-2xl font-bold mb-6">{transaction ? 'Editar' : 'Adicionar'} Transação</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -840,7 +843,7 @@ const CategoryModal = ({ onClose, onSubmit, category }) => {
     };
     
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
             <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md">
                 <h2 className="text-2xl font-bold mb-6">{category ? 'Editar' : 'Adicionar'} Categoria</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -881,7 +884,7 @@ const AccountModal = ({ onClose, onSubmit, account }) => {
     };
     
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
             <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md">
                 <h2 className="text-2xl font-bold mb-6">{account ? 'Editar' : 'Adicionar'} Conta</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -914,7 +917,7 @@ const AccountModal = ({ onClose, onSubmit, account }) => {
 };
 
 const ImportModal = ({ status, onClose, onDownloadTemplate }) => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
         <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md text-center">
             <h2 className="text-2xl font-bold mb-6">Importar Planilha</h2>
             {status.status === 'loading' && (
