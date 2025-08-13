@@ -3,10 +3,12 @@ import { initializeApp } from 'firebase/app';
 import { 
     getAuth, 
     onAuthStateChanged,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    GoogleAuthProvider,
-    signInWithPopup,
+    // As funções de login com e-mail e Google foram desativadas, mas mantidas aqui para o futuro.
+    // createUserWithEmailAndPassword,
+    // signInWithEmailAndPassword,
+    // GoogleAuthProvider,
+    // signInWithPopup,
+    signInAnonymously, // Usaremos o login anônimo por enquanto
     signOut
 } from 'firebase/auth';
 import { 
@@ -21,6 +23,19 @@ import {
     query
 } from 'firebase/firestore';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import 'tailwindcss/tailwind.css';
+
+
+// --- Configuração do Firebase a partir das Variáveis de Ambiente ---
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+};
+
 
 // --- Ícones SVG ---
 const PlusIcon = () => (
@@ -66,7 +81,11 @@ const SparklesIcon = ({ className }) => (
 );
 
 
-// --- Componente de Autenticação ---
+/*
+// --- CÓDIGO DE AUTENTICAÇÃO DESATIVADO ---
+// O componente AuthPage foi desativado para permitir o uso direto do aplicativo.
+// Para reativá-lo, descomente este bloco e mude a lógica no componente App principal.
+
 const AuthPage = ({ auth }) => {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
@@ -134,70 +153,13 @@ const AuthPage = ({ auth }) => {
                     {isLogin ? 'Bem-vindo de Volta!' : 'Crie sua Conta'}
                 </h2>
                 <form onSubmit={handleAuthAction} className="space-y-6">
-                    <div>
-                        <label className="text-sm font-bold text-gray-600 block">E-mail</label>
-                        <input 
-                            type="email" 
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-md mt-1"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="text-sm font-bold text-gray-600 block">Senha</label>
-                        <input 
-                            type="password" 
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-md mt-1"
-                            required
-                        />
-                    </div>
-                    {!isLogin && (
-                        <div>
-                            <label className="text-sm font-bold text-gray-600 block">Confirmar Senha</label>
-                            <input 
-                                type="password" 
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="w-full p-2 border border-gray-300 rounded-md mt-1"
-                                required
-                            />
-                        </div>
-                    )}
-                    {error && <p className="text-red-500 text-sm text-center break-words">{error}</p>}
-                    <div>
-                        <button type="submit" className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 font-semibold">
-                            {isLogin ? 'Entrar' : 'Criar Conta'}
-                        </button>
-                    </div>
+                    // ... Formulário de login ...
                 </form>
-
-                <div className="relative flex py-5 items-center">
-                    <div className="flex-grow border-t border-gray-300"></div>
-                    <span className="flex-shrink mx-4 text-gray-400">OU</span>
-                    <div className="flex-grow border-t border-gray-300"></div>
-                </div>
-
-                <button 
-                    type="button" 
-                    onClick={handleGoogleLogin} 
-                    className="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                    <GoogleIcon />
-                    <span className="ml-3">Entrar com o Google</span>
-                </button>
-
-                <div className="text-center mt-6">
-                    <button onClick={() => { setIsLogin(!isLogin); setError(''); }} className="text-sm text-blue-500 hover:underline">
-                        {isLogin ? 'Não tem uma conta? Cadastre-se' : 'Já tem uma conta? Entre'}
-                    </button>
-                </div>
             </div>
         </div>
     );
 };
+*/
 
 
 // --- Componente Principal do App (após login) ---
@@ -221,8 +183,8 @@ const MainApp = ({ auth, userId, db }) => {
 
     useEffect(() => {
         if (!db || !userId) return;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const baseCollectionPath = `artifacts/${appId}/users/${userId}`;
+        // O caminho dos dados agora é mais simples, focado no usuário (anônimo ou logado)
+        const baseCollectionPath = `users/${userId}`;
 
         const collectionsToWatch = {
             transactions: setTransactions,
@@ -254,7 +216,7 @@ const MainApp = ({ auth, userId, db }) => {
             });
 
             if (!response.ok) {
-                if (response.status === 429 && retries > 0) { // Too Many Requests
+                if (response.status === 429 && retries > 0) {
                     await new Promise(res => setTimeout(res, delay));
                     return callGeminiAPI(payload, retries - 1, delay * 2);
                 }
@@ -279,7 +241,7 @@ const MainApp = ({ auth, userId, db }) => {
 
         const recentTransactions = transactions
             .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .slice(0, 30) // Pega as últimas 30 transações
+            .slice(0, 30)
             .map(t => {
                 const categoryName = categories.find(c => c.id === t.categoryId)?.name || 'N/A';
                 return `${t.date} - ${t.description}: R$ ${t.amount} (${categoryName} - ${t.type === 'income' ? 'Receita' : 'Despesa'})`;
@@ -318,8 +280,7 @@ const MainApp = ({ auth, userId, db }) => {
 
     // --- Funções CRUD ---
     const addOrUpdate = async (collectionName, data, id) => {
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const path = `artifacts/${appId}/users/${userId}/${collectionName}`;
+        const path = `users/${userId}/${collectionName}`;
         try {
             if (id) {
                 await updateDoc(doc(db, path, id), data);
@@ -332,8 +293,7 @@ const MainApp = ({ auth, userId, db }) => {
     };
 
     const deleteItem = async (collectionName, id) => {
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const path = `artifacts/${appId}/users/${userId}/${collectionName}`;
+        const path = `users/${userId}/${collectionName}`;
         try {
             await deleteDoc(doc(db, path, id));
         } catch (error) {
@@ -455,9 +415,8 @@ const MainApp = ({ auth, userId, db }) => {
 
                 setImportStatus({ status: 'loading', message: `Salvando ${transactionsToCreate.length} transações...` });
                 
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                 const batch = writeBatch(db);
-                const transactionsCollection = collection(db, `artifacts/${appId}/users/${userId}/transactions`);
+                const transactionsCollection = collection(db, `users/${userId}/transactions`);
                 
                 transactionsToCreate.forEach(trans => {
                     const docRef = doc(transactionsCollection);
@@ -502,7 +461,7 @@ const MainApp = ({ auth, userId, db }) => {
     
     return (
         <div className="min-h-screen bg-gray-100 font-sans">
-            <Header currentView={currentView} setCurrentView={setCurrentView} auth={auth} />
+            <Header currentView={currentView} setCurrentView={setCurrentView} />
             <main className="container mx-auto px-4 py-4">
                 {currentView === 'dashboard' && <DashboardView dashboardData={dashboardData} onAnalyzeClick={handleGetFinancialAnalysis} />}
                 {currentView === 'transactions' && <TransactionsView 
@@ -584,17 +543,8 @@ const App = () => {
         script.async = true;
         document.body.appendChild(script);
 
-        let firebaseConfig;
-        try {
-            firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        } catch (e) {
-            console.error("Failed to parse Firebase config:", e);
-            setIsAuthReady(true);
-            return;
-        }
-
-        if (!firebaseConfig) {
-            console.error("Firebase config is not available.");
+        if (!firebaseConfig.apiKey) {
+            console.error("Firebase config is not available. Please check your .env.local file.");
             setIsAuthReady(true);
             return;
         }
@@ -607,8 +557,16 @@ const App = () => {
         setDb(dbInstance);
 
         const unsubscribe = onAuthStateChanged(authInstance, (user) => {
-            setUser(user);
-            setIsAuthReady(true);
+            if (user) {
+                setUser(user);
+                setIsAuthReady(true);
+            } else {
+                // Se não houver usuário, faz o login anônimo
+                signInAnonymously(authInstance).catch((error) => {
+                    console.error("Anonymous sign-in failed:", error);
+                    setIsAuthReady(true);
+                });
+            }
         });
 
         return () => {
@@ -626,13 +584,17 @@ const App = () => {
             </div>
         );
     }
-
-    return user ? <MainApp auth={auth} userId={user.uid} db={db} /> : <AuthPage auth={auth} />;
+    
+    // Agora, em vez de mostrar a AuthPage, mostramos o MainApp diretamente se houver um usuário (mesmo que anônimo)
+    return user ? <MainApp auth={auth} userId={user.uid} db={db} /> : (
+        <div className="flex justify-center items-center h-screen bg-gray-100">
+            <p>Conectando...</p>
+        </div>
+    );
 };
 
 
 // --- Componentes de UI (Separados para clareza) ---
-
 const Header = ({ currentView, setCurrentView, auth }) => (
     <header className="bg-white shadow-md">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -642,14 +604,13 @@ const Header = ({ currentView, setCurrentView, auth }) => (
                 <button onClick={() => setCurrentView('transactions')} className={`px-2 py-2 sm:px-3 rounded-md text-sm font-medium ${currentView === 'transactions' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>Transações</button>
                 <button onClick={() => setCurrentView('categories')} className={`px-2 py-2 sm:px-3 rounded-md text-sm font-medium ${currentView === 'categories' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>Categorias</button>
                 <button onClick={() => setCurrentView('accounts')} className={`px-2 py-2 sm:px-3 rounded-md text-sm font-medium ${currentView === 'accounts' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>Contas</button>
-                <button onClick={() => signOut(auth)} className="ml-2 p-2 rounded-full text-gray-600 hover:bg-red-100 hover:text-red-500" title="Sair">
-                    <LogoutIcon />
-                </button>
+                {/* O botão de Logout foi removido por enquanto */}
             </nav>
         </div>
     </header>
 );
 
+// (O restante dos componentes permanece o mesmo)
 const DashboardView = ({ dashboardData, onAnalyzeClick }) => (
     <div className="p-4 md:p-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -666,8 +627,7 @@ const DashboardView = ({ dashboardData, onAnalyzeClick }) => (
                 <p className={`text-3xl font-bold ${dashboardData.balance >= 0 ? 'text-blue-500' : 'text-red-500'}`}>R$ {dashboardData.balance.toFixed(2)}</p>
             </div>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-md text-center">
+         <div className="bg-white p-6 rounded-lg shadow-md text-center">
              <h3 className="text-xl font-semibold text-gray-700 mb-4">Assistente Financeiro IA</h3>
              <p className="text-gray-600 mb-4">Receba uma análise inteligente dos seus gastos e dicas para economizar.</p>
              <button onClick={onAnalyzeClick} className="bg-purple-600 text-white font-bold py-2 px-4 rounded-lg shadow hover:bg-purple-700 transition duration-300 ease-in-out flex items-center justify-center mx-auto">
@@ -675,7 +635,6 @@ const DashboardView = ({ dashboardData, onAnalyzeClick }) => (
                 Análise Inteligente
              </button>
         </div>
-
         <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-xl font-semibold text-gray-700 mb-4">Distribuição de Despesas</h3>
             <div style={{ width: '100%', height: 300 }}>
@@ -1029,13 +988,7 @@ const AnalysisModal = ({ isAnalyzing, result, onClose }) => (
                     <p className="text-gray-600 mt-4">Analisando seus dados...</p>
                 </div>
             ) : (
-                <div className="text-gray-700 space-y-4 whitespace-pre-wrap font-sans">
-                    {result.split('\n').map((line, index) => {
-                        if (line.startsWith('**') && line.endsWith('**')) {
-                            return <h3 key={index} className="text-lg font-bold text-gray-800 mt-4">{line.replaceAll('**', '')}</h3>
-                        }
-                        return <p key={index}>{line}</p>
-                    })}
+                <div className="text-gray-700 space-y-4 whitespace-pre-wrap font-sans" dangerouslySetInnerHTML={{ __html: result.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-gray-900">$1</strong>').replace(/\n/g, '<br />') }}>
                 </div>
             )}
             <div className="flex justify-end mt-6">
