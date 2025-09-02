@@ -7,21 +7,22 @@ import * as firestoreService from './api/firestoreService';
 import { getFinancialAnalysis } from './api/geminiService';
 import { downloadTemplate, readFileAsJson } from './utils/excelUtils';
 import { translateAccountType } from './utils/formatters';
-import Header from './Header';
-import DashboardView from './views/DashboardView';
-import TransactionsView from './views/TransactionsView';
-import CreditCardsView from './views/CreditCardsView';
-import SchedulingView from './views/SchedulingView';
-import GenericListView from './views/GenericListView';
-import Spinner from './components/common/Spinner';
-import TransactionModal from './components/modals/TransactionModal';
-import CategoryModal from './components/modals/CategoryModal';
-import AccountModal from './components/modals/AccountModal';
-import ImportModal from './components/modals/ImportModal';
-import AnalysisModal from './components/modals/AnalysisModal';
-import PaymentModal from './components/modals/PaymentModal';
-import SchedulingModal from './components/modals/SchedulingModal';
-import ForecastedIncomeModal from './components/modals/ForecastedIncomeModal';
+// CORREÇÃO AQUI: Caminho mais explícito para o build
+import Header from './Header.jsx'; 
+import DashboardView from './views/DashboardView.jsx';
+import TransactionsView from './views/TransactionsView.jsx';
+import CreditCardsView from './views/CreditCardsView.jsx';
+import SchedulingView from './views/SchedulingView.jsx';
+import GenericListView from './views/GenericListView.jsx';
+import Spinner from './components/common/Spinner.jsx';
+import TransactionModal from './components/modals/TransactionModal.jsx';
+import CategoryModal from './components/modals/CategoryModal.jsx';
+import AccountModal from './components/modals/AccountModal.jsx';
+import ImportModal from './components/modals/ImportModal.jsx';
+import AnalysisModal from './components/modals/AnalysisModal.jsx';
+import PaymentModal from './components/modals/PaymentModal.jsx';
+import SchedulingModal from './components/modals/SchedulingModal.jsx';
+import ForecastedIncomeModal from './components/modals/ForecastedIncomeModal.jsx';
 
 const MainApp = ({ userId }) => {
     const transactions = useFirestoreSubscription('transactions', userId);
