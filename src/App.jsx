@@ -1,13 +1,14 @@
 // src/App.jsx
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
-import { auth } from './config/firebase';
-import useFirestoreSubscription from './hooks/useFirestoreSubscription';
-import * as firestoreService from './api/firestoreService';
-import { getFinancialAnalysis } from './api/geminiService';
-import { downloadTemplate, readFileAsJson } from './utils/excelUtils';
-import { translateAccountType } from './utils/formatters';
-// CORREÇÃO AQUI: Caminho mais explícito para o build
+import { auth } from './config/firebase.js'; // .js é correto aqui, pois não é um componente JSX
+import useFirestoreSubscription from './hooks/useFirestoreSubscription.js';
+import * as firestoreService from './api/firestoreService.js';
+import { getFinancialAnalysis } from './api/geminiService.js';
+import { downloadTemplate, readFileAsJson } from './utils/excelUtils.js';
+import { translateAccountType } from './utils/formatters.js';
+
+// CORREÇÃO: Adicionando a extensão .jsx em todas as importações de componentes
 import Header from './Header.jsx'; 
 import DashboardView from './views/DashboardView.jsx';
 import TransactionsView from './views/TransactionsView.jsx';
